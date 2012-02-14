@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+  
+        <record model="ir.ui.view" id="product_multipack_form">
+            <field name="name">product.multipack.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+                <field name="arch" type="xml">
+	                <notebook position="inside">        
+				  <page string="Gestione Multipack">
+					<separator string="Dettaglio Multipack" />				  
+				  	<field name="righe_multipack" select='2' colspan="4" nolabel="1" string="Dettaglio MultiPack">
+				  		<tree editable="bottom">
+				  					  			
+				  			<field name="product_id" size='20' required="True"  />
+				  			<field name='price_version_id_pub'></field>
+				  			<field name='price_version_id_riv'></field>
+				  		</tree>				  		
+				  	</field>
+
+				  </page>
+			</notebook>
+
+		  </field>
+        </record>
+    
+ 
+    
+    </data>
+ </openerp>
