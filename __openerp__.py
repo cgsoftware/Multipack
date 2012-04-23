@@ -26,7 +26,7 @@
      Permette di Gestire un elenco di articoli in kit alla Vendita
     """,
     'author': 'C & G Software',
-    "depends" : ['base', 'sale','product'],
+    "depends" : ['base', 'sale','product','ItalianFiscalDocument'],
     "update_xml" : [ 'product_view.xml', 
                    ],
                     
