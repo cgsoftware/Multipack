@@ -119,7 +119,7 @@ class FiscalDocHeader(osv.osv):
             for testa in self.pool.get('fiscaldoc.header').browse(cr,uid,[ids],context=context):
                 for riga in testa.righe_articoli:
                     if riga.product_id.righe_multipack and not riga.flag_multi_creato:
-                        dati_art = riga_obj.onchange_articolo(cr, uid, ids, riga.product_id.id, testa.listino_id.id, riga.product_uom_qty, testa.partner_id.id, testa.data_documento, riga.product_uom.id)
+                        dati_art = riga_obj.onchange_articolo(cr, uid, ids, riga.product_id.id, testa.listino_id.id, riga.product_uom_qty, testa.partner_id.id, testa.data_documento, riga.product_uom.id,context)
                         row = dati_art.get('value',False)
                         #import pdb;pdb.set_trace()
                         if row:
@@ -132,7 +132,7 @@ class FiscalDocHeader(osv.osv):
                             #import pdb;pdb.set_trace()
                             id_row = riga_obj.create(cr,uid,row)                       
                             for riga_multi in riga.product_id.righe_multipack:
-                                dati_art = riga_obj.onchange_articolo(cr, uid, ids, riga_multi.product_id.id, riga_multi.price_version_id_riv.pricelist_id.id, riga.product_uom_qty, testa.partner_id.id, testa.data_documento, riga.product_uom.id)
+                                dati_art = riga_obj.onchange_articolo(cr, uid, ids, riga_multi.product_id.id, riga_multi.price_version_id_riv.pricelist_id.id, riga.product_uom_qty, testa.partner_id.id, testa.data_documento, riga.product_uom.id,context)
                                 row = dati_art.get('value',False)
                                 #import pdb;pdb.set_trace()
                                 if row:
