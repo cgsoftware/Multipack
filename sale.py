@@ -71,6 +71,7 @@ class FiscalDocRighe(osv.osv):
                }
    
 FiscalDocRighe()
+
 class FiscalDocHeader(osv.osv):
    _inherit = "fiscaldoc.header"
    
@@ -145,7 +146,88 @@ class FiscalDocHeader(osv.osv):
                                 
         return res
 
-          
+
 
 
 FiscalDocHeader()
+
+
+
+class pos_order_line(osv.osv):
+    _inherit = "pos.order.line"
+    
+    _columns = {
+               'flag_multi_creato':fields.boolean('Flag Multipack Già Esploso'),
+               }
+    
+
+pos_order_line()
+class pos_order(osv.osv):
+    _inherit = 'pos.order'
+    
+    def check_multipack(self, cr, uid, ids):
+     #import pdb;pdb.set_trace()
+     #res = super(pos_order,self).button_invalidate( cr, uid, ids,*args)     
+     if ids:
+        order = self.browse(cr,uid,ids)[0]
+        order_id = order.id
+        for riga in order.lines:
+            if riga.product_id.righe_multipack and not riga.flag_multi_creato:
+                # c'è un articolo che va esploso prima di fare il mov di mag se possibile
+            # PRIMA SCRIVE LA RIGA DELLO STESSO ARTICOLO SENZA PREZZO
+            
+                dati_art = self.pool.get('pos.order.line').onchange_product_id(cr, uid, [riga.id], order.pricelist_id.id, riga.product_id.id, qty=riga.qty, partner_id=order.partner_id.id)
+                                                           
+                row = dati_art.get('value',False)
+                #import pdb;pdb.set_trace()
+                if row:
+                        row['order_id'] = order_id
+                        row['product_id'] = riga.product_id.id
+                        row['product_uom_qty'] = riga.qty
+                        #row['price_unit']=0
+                        row['price_ded']=100
+                        row['price_subtotal_incl']=0
+                        row['flag_multi_creato'] = True
+                        #import pdb;pdb.set_trace()
+                        print row
+                        #id_row = self.pool.get('pos.order.line').create(cr,uid,row)
+                
+                
+                for riga_multi in riga.product_id.righe_multipack:
+                    if riga.order_id.pricelist_id.name[:1] == "1": # listino al pubblico 
+
+                      dati_art = self.pool.get('pos.order.line').onchange_product_id(cr, uid, [],riga_multi.price_version_id_pub.pricelist_id.id, riga_multi.product_id.id, qty=riga.qty, partner_id=order.partner_id.id)                
+
+                      # aggiunge altri dati e fa la create della riga
+                    else:
+                        #dati_art = self.product_id_change(cr, uid, ids, riga_multi.price_version_id_riv.pricelist_id.id, riga_multi.product_id.id, riga.product_uom_qty,False, riga.product_uom_qty, False, '', riga.order_id.partner_id.id,False, True, riga.order_id.date_order,False,False, False)
+                        dati_art = self.pool.get('pos.order.line').onchange_product_id(cr, uid, [],riga_multi.price_version_id_riv.pricelist_id.id, riga_multi.product_id.id, qty=riga.qty, partner_id=order.partner_id.id)
+                    row = dati_art.get('value',False)
+                    if row:
+                        row['order_id'] = order_id
+                        row['product_id'] = riga_multi.product_id.id
+                        row['product_uom_qty'] = riga.qty
+                        #import pdb;pdb.set_trace()
+                        print row
+                        id_row = self.pool.get('pos.order.line').create(cr,uid,row)
+                
+                ok = self.pool.get('pos.order.line').unlink(cr,uid,[riga.id]) # ha aggiunto le righe in multi pack quindi cancella la riga madre    
+     return True
+ 
+    def write(self, cr, uid, ids, vals, context=None):
+         res = super(pos_order, self).write(cr, uid, ids, vals, context=context)
+         ok = self.check_multipack(cr, uid, ids)
+         return res
+    
+    def create(self, cr, uid, vals, context=None):
+     #import pdb;pdb.set_trace()
+     res = 0
+     if vals:           
+        res = super(pos_order, self).create(cr, uid, vals, context=context)
+        #import pdb;pdb.set_trace() 
+        ok = self.check_multipack(cr, uid,[res])
+     return res
+
+ 
+pos_order()
+          
